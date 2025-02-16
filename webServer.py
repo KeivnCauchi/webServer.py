@@ -27,43 +27,37 @@ def webServer(port=13331):
             # Plenty of guidance online on how to open and read a file in python. How should you read it though if you plan on sending it through a socket?
             f = open(filename[1:], 'rb')
             file_content = f.read()
-
-            connectionSocket.send('HTTP/1.1 200 OK\r\n'.encode())
-
-            connectionSocket.send("Server: HelloWorld\r\n".encode())
-
-            connectionSocket.send('Content-Type: text/html\r\n'.encode())
-
-            connectionSocket.send("\r\n".encode())
-
-            connectionSocket.sendall(file_content)
-
             f.close()
+
+            headers = (
+                "HTTP/1.1 200 OK \r\n"      "Content-Type: text/html \r\n"
+                "Server: HelloWorld \r\n"   "Connection: close \r\n" "\r\n").encode()
+
+            connectionSocket.sendall(headers + file_content)
 
 
         except FileNotFoundError:
             # If the file is not found, send a 404 response
-            connectionSocket.send("HTTP/1.1 404 Not Found\r\n".encode())
+            error_response = (
+                "HTTP/1.1 404 Not Found \r\n"   "Content-Type: text/html \r\n"
+                "Server: HelloWorld \r\n"       "Connection: close \r\n" "\r\n"
+                
+                "<html><body><h1>404 Not Found</h1></body></html>").encode()
 
-            connectionSocket.send("Content-Type: text/html\r\n".encode())
-
-            connectionSocket.send("\r\n".encode())
-
-            connectionSocket.send("<html><body><h1>404 Not Found</h1></body></html>".encode())
+            connectionSocket.sendall(error_response)
 
 
         except Exception as e: # If an error occurs with the request, send a 400 Bad Request response
 
-            connectionSocket.send("HTTP/1.1 400 Bad Request\r\n".encode())
+            error_response = (
+                "HTTP/1.1 400 Bad Request \r\n"    "Content-Type: text/html \r\n"
+                "Server: HelloWorld \r\n"           "Connection: close \r\n" "\r\n"
+        
+                "<html><body><h1>400 Bad Request</h1></body></html>").encode()
 
-            connectionSocket.send("Content-Type: text/html\r\n".encode())
+            connectionSocket.sendall(error_response)
 
-            connectionSocket.send("\r\n".encode())
-
-            connectionSocket.send("<html><body><h1>400 Bad Request</h1></body></html>".encode())
-
-
-    # Send response message for invalid request due to the file not being found (404)
+        # Send response message for invalid request due to the file not being found (404)
     # Remember the format you used in the try: block!
     # Close client socket
     # Fill in start
